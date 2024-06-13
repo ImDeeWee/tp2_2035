@@ -14,6 +14,7 @@
 import Text.ParserCombinators.Parsec -- Bibliothèque d'analyse syntaxique.
 import Data.Char                -- Conversion de Chars de/vers Int et autres.
 import System.IO                -- Pour stdout, hPutStr
+import qualified Control.Applicative as tab
 
 ---------------------------------------------------------------------------
 -- 1ère représentation interne des expressions de notre langage           --
@@ -213,16 +214,16 @@ s2l se = error ("Expression Psil inconnue: " ++ showSexp se)
 
 scons2l :: Sexp -> [Sexp] -> Lexp
 -- ¡¡COMPLÉTER: ajuster à la nouvelle syntaxe!!
-scons2l (Scons se1 se2) sargs = scons2l se1 (se2 : sargs)
-scons2l Snil [Ssym "node", se1, se2] = Lnode (s2l se1) (s2l se2)
+scons2l (Scons se1 se2) sargs = scons2l se1 (se2 : sargs)                     -- si on a toujours un scons se1 se2, on met le se2 dans le tableau Sexp
+scons2l Snil [Ssym "node", se1, se2] = Lnode (s2l se1) (s2l se2)              -- node e1 e2 . SEMBLER ÊTRE CORRECT AVEC LA NOUVELLE SYNTAXE 
 scons2l Snil (Ssym "node" : _sargs)
   = error "Nombre incorrect d'arguments passés à 'node'"
 scons2l Snil (Ssym "seq" : sargs) = foldr Lnode Lnull (map s2l sargs)
-scons2l Snil [Ssym "proc", sargs, sbody]
-  = let loop Snil body = body
-        loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2v sarg) body)
+scons2l Snil [Ssym "proc", sargs, sbody]                                      -- (1)Proc. sargs == argument de la procédure, sbody == corps de la procédure (calcul)
+  = let loop Snil body = body                                                 -- (3) Si loop contient une seule valeur (body), on retourne body ex: proc () = 2 **sbody**. Dans l'example, body serait la valeur 2.
+        loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2v sarg) body)   --
         loop se _ = error ("Arguments formels invalides: " ++ showSexp se)
-    in loop sargs (s2l sbody)
+    in loop sargs (s2l sbody)                                                 -- (2)On rentre dans la fonction loop avk le sargs et l'évaluation du corps
 scons2l Snil (Ssym "proc" : _sargs)
   = error "Nombre incorrect d'arguments passés à 'proc'"
 scons2l Snil [Ssym "def", sdefs, sbody]
@@ -247,7 +248,7 @@ scons2l Snil (Ssym "case" : se : sbranches)
                  (Lvar "<branche-null-manquante>")
                  "<dummy>" "<dummy>" (Lvar "<branche-node-manquante>"))
           sbranches
-scons2l Snil (se : sargs) = foldl Ldo (s2l se) (map s2l sargs)
+scons2l Snil (se : sargs) = foldl Ldo (s2l se) (map s2l sargs)            -- Selon comment eval est evalué (s2l se) devrait etre la fonction et l'autre partie devrait être l'argment
 scons2l se _ = error ("Tête de liste impropre: " ++ showSexp se)
 
 s2v :: Sexp -> Var
@@ -377,3 +378,18 @@ lexpOf = s2l . sexpOf
 
 valOf :: String -> IO Value
 valOf = evalSexp . sexpOf
+
+
+
+
+-- Pour la fonction scons2l, tous les évaluations se font quand le se1 == Snill, sinon on rajoute l'argument e2 dans le tab.
+-- Comment scons2l fonctionne est que des que s1 == Snill, les valeurs dans le tableau sont exactements ce qui doit être faites.
+
+
+
+
+
+
+
+-- A COMPRENDRE --
+-- Les implementations du du numéro 3 de l'énoncé (Aider à comprendre IO value)--
