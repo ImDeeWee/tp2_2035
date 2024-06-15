@@ -220,7 +220,7 @@ scons2l Snil (Ssym "node" : _sargs)
 scons2l Snil (Ssym "seq" : sargs) = foldr Lnode Lnull (map s2l sargs)
 scons2l Snil [Ssym "proc", sargs, sbody]
   = let loop Snil body = body
-        loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2v sarg) body)
+        loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2l sarg) body)
         loop se _ = error ("Arguments formels invalides: " ++ showSexp se)
     in loop sargs (s2l sbody)
 scons2l Snil (Ssym "proc" : _sargs)
