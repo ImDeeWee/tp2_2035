@@ -218,8 +218,8 @@ scons2l (Scons se1 se2) sargs = scons2l se1 (se2 : sargs)                     --
 scons2l Snil [Ssym "node", se1, se2] = Lnode (s2l se1) (s2l se2)              -- node e1 e2 . SEMBLER ÊTRE CORRECT AVEC LA NOUVELLE SYNTAXE 
 scons2l Snil (Ssym "node" : _sargs)
   = error "Nombre incorrect d'arguments passés à 'node'"
-scons2l Snil (Ssym "seq" : sargs) = foldr Lnode Lnull (map s2l sargs)         -- JE NE SUIS PAS SURE MAIS JE PENSE QU'IL MANQUERAIT UN LNODE POUR COMMENCER LA BOUCLE (x1 Lnode x2 (Lnode x3 (... Lnode null)))
-scons2l Snil [Ssym "proc", sargs, sbody]                                      -- (1)Proc. sargs == argument de la procédure, sbody == corps de la procédure (calcul)
+scons2l Snil (Ssym "seq" : sargs) = Lnode (foldr Lnode Lnull (map s2l sargs)) Lnull         -- JE NE SUIS PAS SURE MAIS JE PENSE QU'IL MANQUERAIT UN LNODE POUR COMMENCER LA BOUCLE (x1 Lnode x2 (Lnode x3 (... Lnode null))) ** CHANGER **
+scons2l Snil [Ssym "proc", sargs, sbody]                                      -- (1)Proc. sargs == argument de la procédure, sbody == corps de la procédure (calcul) (Fonctionnement dans le pdf "loop sargs' ...")
   = let loop Snil body = body                                                 -- (3) Si loop contient une seule valeur (body), on retourne body ex: proc () = 2 **sbody**. Dans l'example, body serait la valeur 2.
         loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2v sarg) body)   --
         loop se _ = error ("Arguments formels invalides: " ++ showSexp se)
