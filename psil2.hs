@@ -221,13 +221,13 @@ scons2l Snil (Ssym "node" : _sargs)
 scons2l Snil (Ssym "seq" : sargs) = foldr Lnode Lnull (map s2l sargs)         -- JE NE SUIS PAS SURE MAIS JE PENSE QU'IL MANQUERAIT UN LNODE POUR COMMENCER LA BOUCLE (x1 Lnode x2 (Lnode x3 (... Lnode null))) (Fonctionnement dans le pdf "loop sargs' ...")
 scons2l Snil [Ssym "proc", sargs, sbody]                                      -- (1)Proc. sargs == argument de la procédure, sbody == corps de la procédure (calcul)
   = let loop Snil body = body                                                 -- (3) Si loop contient une seule valeur (body), on retourne body ex: proc () = 2 **sbody**. Dans l'example, body serait la valeur 2.
-        loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2v sarg) body)   -- (4) (Fonctionnement dans le pdf "loop sargs' ...")
+        loop (Scons sargs' sarg) body = loop sargs' (Lproc (s2v sarg) [body])   -- (4) (Fonctionnement dans le pdf "loop sargs' ...") !!!!! CHANGEMENT : MIS BODY DANS UNE LISTE
         loop se _ = error ("Arguments formels invalides: " ++ showSexp se)
     in loop sargs (s2l sbody)                                                 -- (2)On rentre dans la fonction loop avk le sargs et l'évaluation du corps
 scons2l Snil (Ssym "proc" : _sargs)
   = error "Nombre incorrect d'arguments passés à 'proc'"
 scons2l Snil [Ssym "def", sdefs, sbody]
-  = Ldef (s2d sdefs) (s2l sbody)
+  = Ldef (s2d sdefs) ([s2l sbody])                                            -- !!!!!!!!!!!! CHANGEMENT: MIS S2L BODY DANS UNE LISTE
 scons2l Snil (Ssym "def" : _sargs)
   = error "Nombre incorrect d'arguments passés à 'def'"
 scons2l Snil (Ssym "case" : se : sbranches)
