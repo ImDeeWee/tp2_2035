@@ -230,18 +230,16 @@ scons2l Snil [Ssym "def", sdefs, sbody]
   = Ldef (s2d sdefs) ([s2l sbody])                                            -- !!!!!!!!!!!! CHANGEMENT: MIS S2L BODY DANS UNE LISTE
 scons2l Snil (Ssym "def" : _sargs)
   = error "Nombre incorrect d'arguments passés à 'def'"
-scons2l Snil (Ssym "case" : se : sbranches)
+scons2l Snil (Ssym "case" : se : sbranches)                                   -- Le se est l'argument que le case évalue
   = foldr (\ sbranch e' ->
            case e' of
-             Lcase e enull x1 x2 enode
-               -> case sbranch of
-                    Scons (Scons Snil (Ssym "null")) senull
-                      -> Lcase e (s2l senull) x1 x2 enode
-                    Scons (Scons Snil
-                                 (Scons (Scons (Scons Snil (Ssym "node")) sx1)
-                                        sx2))
-                          senode
-                      -> Lcase e enull (s2v sx1) (s2v sx2) (s2l senode)
+             Lcase e enull x1 x2 enode -> 
+              case sbranch of
+                    Scons (Scons Snil (Ssym "null")) senull -> 
+                      Lcase e (s2l senull) x1 x2 enode
+                    
+                    Scons (Scons Snil (Scons (Scons (Scons Snil (Ssym "node")) sx1) sx2)) senode -> 
+                      Lcase e enull (s2v sx1) (s2v sx2) (s2l senode)
                     _ -> error ("Branche invalide: " ++ showSexp sbranch)
              _ -> error "Erreur interne dans 'case'")
           (Lcase (s2l se)
