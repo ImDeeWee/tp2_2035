@@ -15,6 +15,10 @@
 import Text.ParserCombinators.Parsec -- Bibliothèque d'analyse syntaxique.
 import Data.Char                -- Conversion de Chars de/vers Int et autres.
 import System.IO                -- Pour stdout, hPutStr
+import Control.Arrow (ArrowLoop(loop))
+import Data.Text.Array (new)
+import GHC.Base (IO(IO))
+import GHC.Exts.Heap (GenClosure(value))
 
 
 ---------------------------------------------------------------------------
@@ -329,7 +333,22 @@ eval env (Lnode e1 e2) = do v1 <- eval env e1
 eval env (Ldo e1 e2)
   = case evalnoio env e1 of
      Vop f -> f (evalnoio env e2)
-     Vclosure env' arg body -> eval ((arg, evalnoio env e2) : env') body -- Puisque body est un tableau de Lexp, il faut trouver une facon de faire la fonction avec tous les element Lexp de la file. (Probablement une fonction)
+     Vclosure env' arg body -> 
+      let 
+        newenv = ((arg, evalnoio env e2) : env')
+        firstElement = head body
+        returnio x = if length x > 1 
+          then do 
+            return (head x)
+            returnio (tail x)
+          else
+            return (head x)
+
+      in
+        returnio (map (\expression -> evalnoio newenv expression) body)
+        
+          
+
      v -> error ("Pas une fonction: " ++ show v)
 eval env (Lproc arg body) = return (Vclosure env arg body)
 eval env (Ldef defs body)
