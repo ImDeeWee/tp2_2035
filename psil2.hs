@@ -1,5 +1,6 @@
 -- TP-1  --- Implantation d'une sorte de Lisp          -*- coding: utf-8 -*-
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 --
 -- Ce fichier défini les fonctionalités suivantes:
 -- - Analyseur lexical
@@ -14,7 +15,7 @@
 import Text.ParserCombinators.Parsec -- Bibliothèque d'analyse syntaxique.
 import Data.Char                -- Conversion de Chars de/vers Int et autres.
 import System.IO                -- Pour stdout, hPutStr
-import Main (evalnovalue)
+
 
 ---------------------------------------------------------------------------
 -- 1ère représentation interne des expressions de notre langage           --
@@ -327,12 +328,12 @@ eval env (Lnode e1 e2) = do v1 <- eval env e1
 -- ¡¡COMPLÉTER: la poursuivre conversion à IO dans le code ci-dessous!!
 eval env (Ldo e1 e2)
   = case evalnoio env e1 of
-     Vop f -> f (eval env e2)
-     Vclosure env' arg body -> eval ((arg, eval env e2) : env') body
+     Vop f -> f (evalnoio env e2)
+     Vclosure env' arg body -> eval ((arg, evalnoio env e2) : env') body -- Puisque body est un tableau de Lexp, il faut trouver une facon de faire la fonction avec tous les element Lexp de la file. (Probablement une fonction)
      v -> error ("Pas une fonction: " ++ show v)
 eval env (Lproc arg body) = return (Vclosure env arg body)
 eval env (Ldef defs body)
-  = let nenv = map (\(x,e) -> (x, eval nenv e)) defs ++ env
+  = let nenv = map (\(x,e) -> (x, evalnoio nenv e)) defs ++ env
     in eval nenv body
 eval env (Lcase e enull x1 x2 enode)
   = case evalnoio env e of
