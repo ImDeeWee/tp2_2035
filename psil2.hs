@@ -236,10 +236,10 @@ scons2l Snil (Ssym "case" : se : sbranches)                                   --
              Lcase e enull x1 x2 enode -> 
               case sbranch of
                     Scons (Scons Snil (Ssym "null")) senull -> 
-                      Lcase e (s2l senull) x1 x2 enode
+                      Lcase e ([s2l senull]) x1 x2 enode                      --- **** CHANGEMENT ICI
                     
                     Scons (Scons Snil (Scons (Scons (Scons Snil (Ssym "node")) sx1) sx2)) senode -> 
-                      Lcase e enull (s2v sx1) (s2v sx2) (s2l senode)
+                      Lcase e enull (s2v sx1) (s2v sx2) ([s2l senode])        --- *** CHANGEMENT ICI
                     _ -> error ("Branche invalide: " ++ showSexp sbranch)
              _ -> error "Erreur interne dans 'case'")
           (Lcase (s2l se)
