@@ -14,6 +14,7 @@
 import Text.ParserCombinators.Parsec -- Bibliothèque d'analyse syntaxique.
 import Data.Char                -- Conversion de Chars de/vers Int et autres.
 import System.IO                -- Pour stdout, hPutStr
+import Main (evalnovalue)
 
 ---------------------------------------------------------------------------
 -- 1ère représentation interne des expressions de notre langage           --
@@ -325,20 +326,38 @@ eval env (Lnode e1 e2) = do v1 <- eval env e1
                             return (Vcons v1 v2)
 -- ¡¡COMPLÉTER: la poursuivre conversion à IO dans le code ci-dessous!!
 eval env (Ldo e1 e2)
-  = case eval env e1 of
+  = case evalnoio env e1 of
      Vop f -> f (eval env e2)
      Vclosure env' arg body -> eval ((arg, eval env e2) : env') body
      v -> error ("Pas une fonction: " ++ show v)
-eval env (Lproc arg body) = Vclosure env arg body
+eval env (Lproc arg body) = return (Vclosure env arg body)
 eval env (Ldef defs body)
   = let nenv = map (\(x,e) -> (x, eval nenv e)) defs ++ env
     in eval nenv body
 eval env (Lcase e enull x1 x2 enode)
-  = case eval env e of
+  = case evalnoio env e of
      Vnil -> eval env enull
      Vcons v1 v2 -> eval ((x1, v1) : (x2, v2) : env) enode
      v -> error ("Pas une liste: " ++ show v)
 -- eval _ e = error ("Pas implanté: " ++ show e)
+
+
+evalnoio :: VEnv -> Lexp -> Value
+evalnoio _ (Lnum n) = Vnum n
+evalnoio env (Lvar x) = elookup env x
+evalnoio _ Lnull = Vnil
+evalnoio env (Lnode e1 e2) =
+  let v1 = evalnoio env e1
+      v2 = evalnoio env e2
+  in Vcons v1 v2
+
+
+evalnoio env (Lproc arg body) = Vclosure env arg body
+
+
+
+
+
 
 ---------------------------------------------------------------------------
 -- Toplevel                                                              --
