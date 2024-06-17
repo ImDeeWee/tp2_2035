@@ -342,10 +342,10 @@ eval env (Lcase e enull x1 x2 enode) = do
   case v of
     Vnil -> evalBody env enull
     Vcons v1 v2 -> evalBody ((x1, v1) : (x2, v2) : env) enode
-    _ -> error "Pas une liste"
+    _ -> error ("Pas une liste conforme " ++ show v)
 
 evalBody :: VEnv -> [Lexp] -> IO Value
-evalBody env [] = return Vnil
+evalBody _ [] = return Vnil
 evalBody env (e:es) = do
   v <- eval env e
   case es of
