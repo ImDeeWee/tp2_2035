@@ -389,6 +389,7 @@ evalprintlist (e : es) =
   do v <- evalSexp e
      hPutStr stdout (show v)
      hPutStr stdout ", "
+     evalprintlist es
 
 -- Lit un fichier contenant plusieurs Sexps, les évalues l'une après
 -- l'autre, et renvoie la liste des valeurs obtenues.
