@@ -1,0 +1,34 @@
+s2l:
+
+Tout d'abord, le nouveau s2l pour ce devoir n'a pas de différence majeure comparé à celui du premier travail pratique. La seule différence est le changement de LEXP par une liste de LEXP pour Lproc, Lcasae et Ldef. En sachant ceci, on peut commencer à lire et comprendre le fonctionnement de la fonction scons2l donnée qui était une solution possible du premier tp pour ensuite faire les changements nécessaires pour être correctement typé avec la nouvelle version de LEXP. C'est la partie qui nous a prit le plus de temps à réaliser de ce travail (surtout les deux "loop" et la partie pour évaluer Lcase donc qu'on va en discuter plus tard), mais après ceci et avoir compris qu'il fallait seulement mettre certaines variables dans des listes, le reste à été plus facile. Selon nous, c'est la partie la plus compliqué de ce qu'on a fait. Tout le reste du travail a été possible après la compréhension de scons2l.
+
+Ce qui nous a réellement aidé a été les fonctions Sexp et les dessins de l'ASA Lexp qu'on avait créé pour le premier tp (aussi discuté dans le premier rapport) et réellement comprendre comment la fonction foldr fonctionnait. 
+
+
+
+
+
+
+
+
+*** Problèmes ***
+
+Comprendre les "loop" dans "scons2l" et "s2d":
+
+Lorsqu'il fut le moment de comprendre la partie de "scons2l", cela nous a prit un certain temps de reflexion pour comprendre la récurision "loop". Grace au dessin qu'on s'était fait pour le premier travail, on a finalement été capable de comprendre que le cas qui commence par Snil était le cas de base pour retourner le body Lexp, qui peut être la procédure évaluer avant avec l'autre cas. De plus, on a rélisé que la variable "body" dans la création de la procédure devrait être dans une liste, ce qui n'était pas nécessaire pour la première partie.
+
+
+
+
+
+Comprend la partie pour définir les cases dans scons2l:
+
+Ceci à été la partie la plus compliqué de ce devoir. Déjà, on a dû vraiment comprendre le fonctionnement de la fonction foldr à l'aide de plusieurs vidéos et recherches sur internet. Après cela, on a changé l'indectation du code de cette partie, surtout celle du lambda calcul, car la version originale était plus compliqué à comprendre selon nous. Aussi, comme pour les "loop", on est allé revisiter nos croquis qu'on s'était fait pour comprendre comment les "case" devait être formé dans la réprésentation SEXP. On a compris c'était quoi les arguments de la fonction foldr : 
+
+1. Lcase (s2l se)([Lvar "<branche-null-manquante>"]) "<dummy>" "<dummy>" ([Lvar "<branche-node-manquante>"])
+2. sbranches
+
+Pour finir, on s'est attarder pour comprendre le gros lambda calcul. C'est après toutes ses étapes qu'on a finalement eu une idée du fonctionnement de cette partie et on a fini par comprendre que "s2l senull", "s2l senode", "Lvar "<branche-null-manquante>"" et "Lvar "<branche-node-manquante>"" devait être inclut dans une liste pour corriger le typage de cette fonction.
+
+
+
