@@ -318,30 +318,51 @@ elookup :: VEnv -> Var -> Value
 elookup [] x = error ("Variable inconnue: " ++ x)
 elookup ((y,v):env) x = if x == y then v else elookup env x
 
+
 eval :: VEnv -> Lexp -> IO Value
 eval _ (Lnum n) = return (Vnum n)
 eval env (Lvar x) = return (elookup env x)
-eval _ Lnull = return (Vnil)
-eval env (Lnode e1 e2) = do v1 <- eval env e1
-                            v2 <- eval env e2
-                            return (Vcons v1 v2)
--- ¡¡COMPLÉTER: la poursuivre conversion à IO dans le code ci-dessous!!
-eval env (Ldo e1 e2)
-  = case evalnoio env e1 of
-     Vop f -> f (evalnoio env e2)
-     Vclosure env' arg body -> eval ((arg, evalnoio env e2) : env') body -- Puisque body est un tableau de Lexp, il faut trouver une facon de faire la fonction avec tous les element Lexp de la file. (Probablement une fonction)
-     v -> error ("Pas une fonction: " ++ show v)
+eval _ Lnull = return Vnil
+eval env (Lnode e1 e2) = do
+  v1 <- eval env e1
+  v2 <- eval env e2
+  return (Vcons v1 v2)
+eval env (Ldo e1 e2) = do
+  v1 <- eval env e1
+  case v1 of
+    Vop f -> f =<< eval env e2
+    Vclosure env' arg body -> evalClosure env' arg body e2
+    _ -> error ("Pas une fonction: " ++ show v1)
 eval env (Lproc arg body) = return (Vclosure env arg body)
-eval env (Ldef defs body)
-  = let nenv = map (\(x,e) -> (x, evalnoio nenv e)) defs ++ env
-    in eval nenv body
-eval env (Lcase e enull x1 x2 enode)
-  = case evalnoio env e of
-     Vnil -> eval env enull
-     Vcons v1 v2 -> eval ((x1, v1) : (x2, v2) : env) enode
-     v -> error ("Pas une liste: " ++ show v)
--- eval _ e = error ("Pas implanté: " ++ show e)
+eval env (Ldef defs body) = do
+  nenv <- extendEnv env defs
+  evalBody nenv body
+eval env (Lcase e enull x1 x2 enode) = do
+  v <- eval env e
+  case v of
+    Vnil -> evalBody env enull
+    Vcons v1 v2 -> evalBody ((x1, v1) : (x2, v2) : env) enode
+    _ -> error "Pas une liste"
 
+evalBody :: VEnv -> [Lexp] -> IO Value
+evalBody env [] = return Vnil
+evalBody env (e:es) = do
+  v <- eval env e
+  case es of
+    [] -> return v
+    _  -> evalBody env es
+
+evalClosure :: VEnv -> Var -> [Lexp] -> Lexp -> IO Value
+evalClosure env arg body e2 = do
+  v2 <- eval env e2
+  let nenv = (arg, v2) : env
+  evalBody nenv body
+
+extendEnv :: VEnv -> [(Var, Lexp)] -> IO VEnv
+extendEnv env defs = foldr (\(x, e) acc -> do
+  env' <- acc
+  v <- eval env e
+  return ((x, v) : env')) (return env) defs
 
 evalnoio :: VEnv -> Lexp -> Value
 evalnoio _ (Lnum n) = Vnum n
@@ -351,12 +372,7 @@ evalnoio env (Lnode e1 e2) =
   let v1 = evalnoio env e1
       v2 = evalnoio env e2
   in Vcons v1 v2
-
-
 evalnoio env (Lproc arg body) = Vclosure env arg body
-
-
-
 
 
 
