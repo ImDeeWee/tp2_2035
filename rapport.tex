@@ -1,0 +1,68 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\title{
+    \vspace{2cm}
+    \Huge \textbf{Rapport du travail pratique 2} \\
+    \vspace{1cm}
+    \LARGE IFT-2035 \\
+    \vspace{2cm}
+}
+\author{
+    DIEUDONNÉ De-Webertho (20262379) \\ BENNOUR Hicham (20265790)
+}
+
+\date{18 Juin 2024}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\section{Compréhension}
+Dans ce TP, nous sommes chargés de modifier le code de Psil afin d'y ajouter des effets de bord. Les principaux ajustements à réaliser concernent l'introduction de la nouvelle opération primitive print et l'adaptation des constructions proc et def pour supporter des séquences d'instructions au lieu d'une unique expression. Ainsi, il est nécessaire d'ajuster la récursivité dans les déclarations avec def : désormais, les fonctions définies peuvent être mutuellement récursives seulement si elles sont toutes nommées différemment et aucune autre variable définie dans le même def ne peut être récursive. Le code pré-fourni comporte aussi des erreurs de typage qu'il faudra corriger, en particulier dans la fonction eval qui doit maintenant renvoyer un résultat de type IO Value au lieu de Value.
+\section{Fonctions}
+
+\subsection{s2l}
+Tout d'abord, le nouveau s2l pour ce devoir n'a pas de différence majeure comparé à celui du premier travail pratique. La seule différence est le changement de LEXP par une liste de LEXP pour Lproc, Lcase et Ldef. En sachant cela, on peut commencer à lire et comprendre le fonctionnement de la fonction scons2l donnée qui était une solution possible du premier TP pour ensuite faire les changements nécessaires pour être correctement typé avec la nouvelle version de LEXP. C'est la partie qui nous a pris le plus de temps à réaliser pour ce travail (surtout les deux "loops" et la partie pour évaluer Lcase, dont nous allons discuter plus tard), mais après cela et avoir compris qu'il fallait seulement mettre certaines variables dans des listes, le reste a été plus facile. Selon nous, c'est la partie la plus compliquée de ce que nous avons fait. Tout le reste du travail a été possible après la compréhension de scons2l.
+
+Ce qui nous a réellement aidés a été les fonctions Sexp et les dessins de l'ASA Lexp que nous avions créés pour le premier TP (également discutés dans le premier rapport) et comprendre réellement comment la fonction foldr fonctionnait.
+
+
+\subsection{eval}
+\begin{enumerate}
+\item \textbf{evalBody}
+
+Cette fonction helper sert à évaluer un tableau d'expressions \textit{Lexp}. Elle est utilisée pour évaluer le body. Le cas de base est la liste vide qui retourne \textit{Vnil}, indiquant qu'il n'y a pas de valeur à retourner. Si le tableau contient au moins une expression, la fonction évalue la première et vérifie s'il reste d'autres expressions à évaluer. Si c'est le cas, elle continue à évaluer le reste, sinon elle \textit{return} la valeur. Cette fonction est très importante dans l'évaluation de blocs de code avec plusieurs expressions.
+
+\item \textbf{evalClosure}
+
+Cette fonction helper est essentielle pour l'exécution des fermetures dans l'interpréteur, permettant à une fonction de capturer et d'utiliser les variables de son contexte lexical. Elle fonctionne en prenant un environnement et une expression pour l'argument, évaluant cette expression, et liant sa valeur à une variable d'argument dans un nouvel environnement étendu. Ce nouvel environnement est ensuite utilisé pour évaluer le corps de la fonction, avec le résultat de la dernière expression évaluée retourné.
+
+\item \textbf{extendEnv}
+
+Cette fonction helper joue un rôle clé dans l'extension de l'environnement d'exécution avec de nouvelles définitions de variables et de fonctions, facilitant ainsi la création de nouvelles portées et la manipulation de l'état. Elle prend une liste de paires de variables et d'expressions, évalue chaque expression dans l'environnement courant, et ajoute chaque nouvelle variable à l'environnement avec sa valeur correspondante.
+
+\end{enumerate}
+\section{Liste des problèmes}
+\subsection{Comprendre les "loops" dans "scons2l" et "s2d"}
+Lorsqu'il a été temps de comprendre la partie de "scons2l", cela nous a pris un certain temps de réflexion pour comprendre la récursion "loop". Grâce au dessin que nous avions fait pour le premier travail, nous avons finalement été capables de comprendre que le cas qui commence par Snil était le cas de base pour retourner le body Lexp, qui peut être la procédure évaluée avant avec l'autre cas. De plus, nous avons réalisé que la variable "body" dans la création de la procédure devait être dans une liste, ce qui n'était pas nécessaire pour la première partie.
+
+\subsection{Comprendre la partie pour définir les cases dans scons2l}
+Ceci a été la partie la plus compliquée de ce devoir. Déjà, nous avons dû vraiment comprendre le fonctionnement de la fonction foldr à l'aide de plusieurs vidéos et recherches sur Internet. Après cela, nous avons changé l'indentation du code de cette partie, surtout celle du lambda calcul, car la version originale était plus compliquée à comprendre selon nous. Aussi, comme pour les "loops", nous avons revisité nos croquis pour comprendre comment les "cases" devaient être formés dans la représentation SEXP. Nous avons compris quels étaient les arguments de la fonction foldr :
+\begin{enumerate}
+\item Lcase (s2l se)([Lvar "<branche-null-manquante>"]) "<dummy>" "<dummy>" ([Lvar "<branche-node-manquante>"])
+\item sbranches
+\end{enumerate}
+\subsection{Lambda calcul}
+Pour finir, nous nous sommes attardés à comprendre le gros lambda calcul. C'est après toutes ces étapes que nous avons finalement eu une idée du fonctionnement de cette partie et nous avons fini par comprendre que "s2l senull", "s2l senode", "Lvar "<branche-null-manquante>"" et "Lvar "<branche-node-manquante>"" devaient être inclus dans une liste pour corriger le typage de cette fonction.
+\subsection{Traitement de body}
+Trouver une façon de traiter l'évaluation du tableau d'expressions Lexp body a été un grand défi. En effet, il a fallu comprendre le rôle de la fonction return en Haskell pour aboutir à la fonction d'assistance evalBody, qui réussit à gérer l'évaluation. Ceci est particulièrement utile dans l'évaluation des blocs de code.
+\end{document}

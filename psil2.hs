@@ -1,4 +1,4 @@
--- TP-1  --- Implantation d'une sorte de Lisp          -*- coding: utf-8 -*-
+-- TP-2  --- Implantation d'une sorte de Lisp          -*- coding: utf-8 -*-
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 --
@@ -342,6 +342,33 @@ eval env (Lcase e enull x1 x2 enode) = do
   case v of
     Vnil -> evalBody env enull
     Vcons v1 v2 -> evalBody ((x1, v1) : (x2, v2) : env) enode
+<<<<<<< HEAD
+    _ -> error ("Pas une liste conforme " ++ show v)
+
+-- Évalue une séquence d'expressions, retournant la valeur de la dernière.
+evalBody :: VEnv -> [Lexp] -> IO Value
+evalBody _ [] = return Vnil
+evalBody env (e:es) = do
+  v <- eval env e
+  case es of
+    [] -> return v
+    _  -> evalBody env es
+
+-- Évalue une fermeture.
+evalClosure :: VEnv -> Var -> [Lexp] -> Lexp -> IO Value
+evalClosure env arg body e2 = do
+  v2 <- eval env e2
+  let nenv = (arg, v2) : env
+  evalBody nenv body
+
+-- Étend un environnement avec de nouvelles définitions.
+extendEnv :: VEnv -> [(Var, Lexp)] -> IO VEnv
+extendEnv env defs = foldr (\(x, e) acc -> do
+  env' <- acc
+  v <- eval env e
+  return ((x, v) : env')) (return env) defs
+
+=======
     _ -> error "Pas une liste"
 
 evalBody :: VEnv -> [Lexp] -> IO Value
@@ -376,6 +403,7 @@ evalnoio env (Lproc arg body) = Vclosure env arg body
 
 
 
+>>>>>>> 9b236e4f36781e6eaf46e5fa8ff04e00f2bc2857
 ---------------------------------------------------------------------------
 -- Toplevel                                                              --
 ---------------------------------------------------------------------------
