@@ -1,4 +1,4 @@
-Le dossier psil2.pdf est l'énoncé du devoir.
+Le fichier psil2.pdf est l'énoncé du devoir.
 
 Pour lancer le programme haskell, veuillez télécharger GHC sur votre machine:
 https://www.haskell.org/ghcup/
